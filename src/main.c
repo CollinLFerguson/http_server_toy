@@ -1,11 +1,14 @@
 #include <stdio.h>
+#include <include/connection.h>
 
 int main(){
     printf("Hello World!\n");
     int foo = 4;
     int bar = 2;
     int flump = foo/bar;
+    int bungus = test();
 
-    printf("%d", flump);
+    printf("%d\n", flump);
+    printf("%d\n", bungus);
     return 0;
 }
