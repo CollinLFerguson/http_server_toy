@@ -4,7 +4,8 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <stdio.h>
-
+#include <string.h>
+#include <stdlib.h>
 #include <unistd.h> //unix specific - used for read()
 
 
@@ -64,6 +65,7 @@ void connection_accept_clients(connection_server * server){
         printf("Client connected successfully\n");   
 
         read_client_test(connection_descriptor);
+        write_client(connection_descriptor);
 
         /*
         * spin off thread here. Use pthread? 
@@ -73,16 +75,44 @@ void connection_accept_clients(connection_server * server){
 }
 
 void read_client_test(int connection_descriptor){
-    char rd_val[sizeof(char) * 1600];  
+    char* rd_val = malloc(sizeof(char) * 1600);
 
     read(connection_descriptor, rd_val, 1600);
     printf("Reading Full Packet\n");
+    printf("~~~~~~~~~~~~~~~~~~~~~~\n");
     printf("%s", rd_val);
+    printf("~~~~~~~~~~~~~~~~~~~~~~\n");
     printf("End read packet\n");
+
+    free(rd_val);
 }
 
+void write_client(int connection_descriptor){
+    printf("Start write to client\n");
+    char content_body[] = "<html><body><h1>Hello World!</h1></body></html>";
+    size_t content_length = strlen(content_body);
+    char response_header[] = ""
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/html; charset=UTF-8\r\n"
+            "Connection: Close\r\n"
+            "Cache-Control: no-cache\r\n";
+    int response_size = snprintf(NULL, 0, "%sContent-Length: %zu\r\n\r\n%s", response_header, content_length, content_body);
 
+    char* response = malloc((size_t) (response_size + 1));
 
+    snprintf(response, (size_t) (response_size + 1), "%sContent-Length: %zu\r\n\r\n%s", response_header, content_length, content_body);
+    printf("--response\n\n%s\n----\n", response);
+    int res = send(connection_descriptor, response, response_size, 0);
+
+    if(res == -1){
+        printf("Failure to accept send message. Error: %d\n", errno);
+    } else {
+        printf("success in writing to client.\n");
+    }
+
+    free(response);
+
+}
 
 void connection_init_server(connection_server* server){
     server->server_addr.sin_family = AF_INET;

@@ -19,4 +19,6 @@ void connection_accept_clients(connection_server* server);
 
 void read_client_test(int connection_descriptor); //test function
 
+void write_client(int connection_descriptor); //test function
+
 #endif
